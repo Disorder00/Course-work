@@ -17,5 +17,6 @@ outputs/submissions/*
 outputs/*.csv
 outputs/*.json
 outputs/.matplotlib/
+reports/rendered_report/
 
 *.log

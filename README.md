@@ -96,3 +96,15 @@ python src/train.py --train data/sample/train_sample.csv --test data/sample/test
 ## 结果说明
 
 完整实验结果将在运行脚本后自动保存，并在课程报告中整理为表格和图示。
+
+## 生成课程报告
+
+```bash
+python scripts/build_report.py
+```
+
+报告文件会生成到：
+
+```text
+reports/高级机器学习理论课程报告_李小茹.docx
+```
