@@ -1,0 +1,7 @@
+-r requirements.txt
+
+# Optional extended models used in the full report experiments.
+# Install these when the machine has enough time and network access.
+xgboost>=2.0
+lightgbm>=4.0
+catboost>=1.2
