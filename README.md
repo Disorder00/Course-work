@@ -106,5 +106,5 @@ python scripts/build_report.py
 报告文件会生成到：
 
 ```text
-reports/高级机器学习理论课程报告_李小茹.docx
+reports/高级机器学习理论课程报告_李小茹_扩展版.docx
 ```

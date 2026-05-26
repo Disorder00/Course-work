@@ -20,3 +20,4 @@ outputs/.matplotlib/
 reports/rendered_report/
 
 *.log
+~$*.docx
