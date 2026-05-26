@@ -71,7 +71,8 @@ python src/train.py --train data/sample/train_sample.csv --test data/sample/test
 脚本会输出：
 
 - `outputs/cv_results.csv`：各模型交叉验证结果。
-- `outputs/submissions/ensemble_submission.csv`：Kaggle 提交文件。
+- `outputs/submissions/best_model_submission.csv`：本地交叉验证最优模型的 Kaggle 提交文件。
+- `outputs/submissions/weighted_ensemble_submission.csv`：加权融合模型的 Kaggle 提交文件。
 - `outputs/figures/cv_results.png`：模型效果对比图。
 
 ## 项目结构

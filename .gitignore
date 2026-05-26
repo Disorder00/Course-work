@@ -3,6 +3,7 @@ __pycache__/
 .venv/
 venv/
 .ipynb_checkpoints/
+catboost_info/
 
 data/raw/*
 !data/raw/README.md

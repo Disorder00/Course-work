@@ -198,6 +198,13 @@ def make_ensemble(results: List[ModelResult], y_log: np.ndarray) -> ModelResult:
     )
 
 
+def save_submission(test_ids: pd.Series, log_predictions: np.ndarray, path: Path) -> None:
+    price_predictions = np.expm1(log_predictions)
+    price_predictions = np.maximum(price_predictions, 0)
+    submission = pd.DataFrame({"Id": test_ids, "SalePrice": price_predictions})
+    submission.to_csv(path, index=False)
+
+
 def load_data(train_path: Path, test_path: Path) -> Tuple[pd.DataFrame, np.ndarray, pd.DataFrame, pd.Series]:
     train = pd.read_csv(train_path)
     test = pd.read_csv(test_path)
@@ -247,17 +254,20 @@ def main() -> None:
     save_cv_plot(result_frame, "outputs/figures/cv_results.png")
 
     best = min(results, key=lambda r: r.mean_score)
-    final_price_pred = np.expm1(best.test_pred)
-    final_price_pred = np.maximum(final_price_pred, 0)
+    best_submission_path = Path("outputs/submissions/best_model_submission.csv")
+    save_submission(test_ids, best.test_pred, best_submission_path)
 
-    submission = pd.DataFrame({"Id": test_ids, "SalePrice": final_price_pred})
-    submission_path = Path("outputs/submissions/ensemble_submission.csv")
-    submission.to_csv(submission_path, index=False)
+    ensemble = next((r for r in results if r.name == "weighted_ensemble"), None)
+    if ensemble is not None:
+        ensemble_submission_path = Path("outputs/submissions/weighted_ensemble_submission.csv")
+        save_submission(test_ids, ensemble.test_pred, ensemble_submission_path)
 
     print("\nSaved results:")
     print("  outputs/cv_results.csv")
     print("  outputs/figures/cv_results.png")
-    print(f"  {submission_path}")
+    print(f"  {best_submission_path}")
+    if ensemble is not None:
+        print(f"  {ensemble_submission_path}")
     print(f"Best local model: {best.name}, log RMSE/RMSLE={best.mean_score:.5f}")
 
 
