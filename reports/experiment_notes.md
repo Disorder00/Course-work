@@ -37,3 +37,7 @@ Kaggle House Prices 房价预测竞赛。
 | Ridge Regression | 0.14399 | 0.02627 | 线性基线模型 |
 
 结论：梯度提升树模型整体优于线性基线和随机森林，其中 CatBoost 和 XGBoost 的效果最好。加权融合没有超过最优单模型，说明当前融合权重仍偏简单，后续可以尝试 Stacking、基于验证集的权重搜索或更细致的特征工程。
+
+## Kaggle 线上提交结果
+
+使用本地交叉验证最优的 CatBoost 模型生成 `outputs/submissions/best_model_submission.csv` 并提交到 Kaggle，Public Score 为 0.12481。该线上成绩与本地 5 折交叉验证 RMSLE=0.12029 接近，说明本地验证指标能够较好反映模型在测试集上的泛化性能。
