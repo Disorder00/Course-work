@@ -9,7 +9,7 @@ from docx.shared import Inches, Pt, RGBColor
 
 
 ROOT = Path(__file__).resolve().parents[1]
-OUT = ROOT / "reports" / "高级机器学习理论课程报告_李小茹_扩展版.docx"
+OUT = ROOT / "reports" / "高级机器学习理论课程报告_李小茹_终版.docx"
 FIG_DIR = ROOT / "reports" / "figures"
 GITHUB_URL = "https://github.com/Disorder00/Course-work"
 
@@ -211,18 +211,20 @@ def abstract(doc):
 
 
 def body(doc):
-    heading(doc, "1 引言", 1)
+    heading(doc, "1 绪论", 1)
+    heading(doc, "1.1 研究背景与问题动机", 2)
     paragraph(doc, "随着城市化发展和房地产市场交易数据的积累，基于机器学习的房价预测逐渐成为数据挖掘、金融风控和智能评估中的重要问题。房屋价格并非由单一变量决定，而是受到建筑面积、整体质量、地段、楼龄、装修状态、地下室、车库、社区属性等多重因素共同影响。这类数据具有变量类型混合、缺失模式复杂、特征间非线性关系明显、异常样本存在等特点，因此适合作为高级机器学习课程中的综合实验对象。")
     paragraph(doc, "Kaggle House Prices 竞赛提供了一个较为规范的公开基准。训练集包含 1460 条住宅样本，测试集包含 1459 条样本，特征数量接近 80 个，目标变量为 SalePrice。竞赛评价指标 RMSLE 关注预测值与真实值的相对比例误差，对高价房和低价房具有更均衡的惩罚效果。与单纯追求线上分数不同，本文更加关注模型选择、算法机制、实验设计和结果解释，目标是形成一份可复现、可分析、可扩展的课程实验报告。")
     paragraph(doc, "本文的主要工作包括四点。第一，完成数据探索和可视化分析，解释为什么需要对房价进行对数变换。第二，比较线性模型、Bagging 树模型和 Boosting 树模型在同一任务上的差异。第三，构建自动化训练脚本，实现数据读取、预处理、5 折交叉验证、模型融合、图表保存和 Kaggle 提交文件生成。第四，将本地验证结果与 Kaggle 线上 Public Score 对照，分析本地验证策略的可靠性。")
 
-    heading(doc, "2 相关工作", 1)
+    heading(doc, "1.2 相关工作", 2)
     paragraph(doc, "梯度提升树是结构化数据建模中最成功的算法族之一。Friedman 提出的 Gradient Boosting Machine 将弱学习器按加法模型逐步组合，通过拟合损失函数的负梯度来降低经验风险。Chen 和 Guestrin 提出的 XGBoost 在目标函数中显式引入正则化项，并使用二阶泰勒展开近似损失，使分裂增益计算更精确，成为大量 Kaggle 竞赛中的强力基线。")
     paragraph(doc, "LightGBM 针对大规模特征和样本训练效率进行了优化，采用基于直方图的分裂查找、叶子优先生长策略、互斥特征捆绑和基于梯度的单边采样，在保持模型精度的同时提高训练速度。CatBoost 则重点解决类别特征处理和预测偏移问题，通过有序目标统计和有序提升机制降低目标泄露风险，对类别变量较多的表格数据具有良好适应性。")
     paragraph(doc, "近年来，深度学习在视觉、语音和自然语言处理领域取得巨大成功，但在中小规模表格数据上，树模型仍然经常优于深度神经网络。Grinsztajn 等研究指出，在不进行大规模预训练的条件下，基于树的模型在许多真实表格任务上仍具优势。Borisov 等综述也表明，表格数据中的异质变量、稀疏类别和非平滑决策边界使得梯度提升树依然具有很强竞争力。因此，本文选择梯度提升树作为扩展算法，符合当前结构化数据建模的主流实践。")
     add_figure(doc, "model_family.png", "图 1 本文比较的模型族及其关系")
 
-    heading(doc, "3 问题定义与评价指标", 1)
+    heading(doc, "2 问题定义与数据分析", 1)
+    heading(doc, "2.1 问题定义与评价指标", 2)
     paragraph(doc, "给定训练集 D={(xi, yi)}，其中 xi 表示第 i 套房屋的特征向量，yi 表示成交价格。模型学习函数 f，使得预测值 f(xi) 尽可能接近真实房价 yi。由于房价为正且分布右偏，本文对目标变量进行 z=log(1+y) 变换。模型在 z 空间中训练，预测时再通过 y_hat=exp(z_hat)-1 还原到原始价格空间。")
     paragraph(doc, "Kaggle 使用 RMSLE 作为评价指标。其形式可以理解为真实价格与预测价格取 log1p 后的均方根误差。该指标相比 RMSE 更关注相对误差，能够避免高价样本对损失函数的绝对主导。由于本文直接在 log1p(SalePrice) 空间计算 RMSE，因此本地交叉验证指标与 RMSLE 等价。")
     table(doc, ["符号", "含义", "本文设置", "说明"], [
@@ -233,7 +235,7 @@ def body(doc):
         ("RMSLE", "评价指标", "log 空间 RMSE", "与 Kaggle 指标一致"),
     ], widths=[0.8, 1.4, 1.7, 2.5])
 
-    heading(doc, "4 数据集与探索性分析", 1)
+    heading(doc, "2.2 数据集与探索性分析", 2)
     paragraph(doc, "House Prices 数据集来自 Ames 房价数据的竞赛化版本，变量覆盖住宅建筑、位置、质量、空间、地下室、车库和交易时间等方面。训练集有 1460 条样本，测试集有 1459 条样本。该数据规模不大，但变量类型丰富，适合比较不同机器学习算法在结构化数据上的表现。")
     add_figure(doc, "target_distribution.png", "图 2 SalePrice 原始分布")
     paragraph(doc, "图 2 表明 SalePrice 呈明显右偏分布，少数高价房屋会拉大原始价格空间中的误差。若直接使用 RMSE，模型可能更加关注高价样本的绝对误差，而忽略普通价位房屋的相对误差。因此本文采用 log1p 变换，与竞赛 RMSLE 指标保持一致。")
@@ -248,21 +250,22 @@ def body(doc):
     add_figure(doc, "yearbuilt_saleprice.png", "图 8 YearBuilt 与 SalePrice 的关系")
     paragraph(doc, "图 6 至图 8 展示了关键变量与房价的关系。OverallQual 与房价呈明显单调关系，说明质量评分是强预测因子；GrLivArea 与房价总体正相关，但存在少量大面积低价异常点；YearBuilt 与房价也存在趋势，新房整体价格较高，但不同年代房屋的价格分散程度较大。这些现象说明模型既需要学习主效应，也需要处理异常样本和变量交互。")
 
-    heading(doc, "5 算法原理", 1)
-    heading(doc, "5.1 Ridge Regression", 2)
+    heading(doc, "3 方法与系统实现", 1)
+    heading(doc, "3.1 算法原理", 2)
+    heading(doc, "3.1.1 Ridge Regression", 3)
     paragraph(doc, "Ridge Regression 是加入 L2 正则化的线性回归。其目标函数由平方误差项和权重平方惩罚项组成。L2 正则化可以抑制过大的系数，在特征相关性较强时提高模型稳定性。本文将 Ridge 作为线性基线，用于衡量非线性集成模型的提升幅度。")
-    heading(doc, "5.2 Random Forest", 2)
+    heading(doc, "3.1.2 Random Forest", 3)
     paragraph(doc, "Random Forest 通过 Bootstrap 采样构造多棵决策树，并在每个节点随机选择部分特征进行分裂，最终对所有树的预测结果取平均。该方法降低了单棵树的方差，能够捕捉非线性关系，但每棵树独立训练，不能像 Boosting 一样逐步修正前一轮残差。")
-    heading(doc, "5.3 XGBoost", 2)
+    heading(doc, "3.1.3 XGBoost", 3)
     paragraph(doc, "XGBoost 将模型表示为若干回归树的加法组合。每一轮新增一棵树，用于拟合当前模型的残差方向。其核心特点包括二阶梯度近似、正则化复杂度惩罚、列采样、行采样和缺失值默认方向学习。这些机制使 XGBoost 在保证精度的同时具有较强的泛化能力。")
-    heading(doc, "5.4 LightGBM", 2)
+    heading(doc, "3.1.4 LightGBM", 3)
     paragraph(doc, "LightGBM 使用直方图近似连续特征分裂点，大幅降低分裂搜索成本。其叶子优先生长策略每次选择增益最大的叶子继续分裂，理论上能更快降低训练误差。但如果数据规模较小或参数控制不足，该策略也可能带来过拟合风险，因此需要配合叶子数、最小样本数和采样参数。")
-    heading(doc, "5.5 CatBoost", 2)
+    heading(doc, "3.1.5 CatBoost", 3)
     paragraph(doc, "CatBoost 的优势在于类别特征处理和有序提升。传统目标编码容易引入目标泄露，即某个样本的标签信息被编码进自身特征。CatBoost 通过随机排列和有序统计降低这种偏差，并通过对称树结构提高推理效率。虽然本文预处理阶段使用了统一独热编码，但 CatBoost 的 Boosting 机制仍表现出很强竞争力。")
-    heading(doc, "5.6 加权融合", 2)
+    heading(doc, "3.1.6 加权融合", 3)
     paragraph(doc, "加权融合将多个模型的预测结果按权重线性组合。本文使用验证误差倒数确定权重，即验证误差越低的模型权重越高。该方法简单透明，但未必最优，因为不同模型之间可能高度相关，简单加权无法保证误差互补。实验结果也显示，当前加权融合略差于最优 CatBoost 单模型。")
 
-    heading(doc, "6 软件结构与复现流程", 1)
+    heading(doc, "3.2 软件结构与复现流程", 2)
     paragraph(doc, f"本文代码仓库地址为 {GITHUB_URL}。仓库给出了环境配置、数据下载方式、样例数据、训练脚本、报告生成脚本和实验记录。为了保证可复现性，代码固定随机种子为 2026，使用相同的 5 折划分比较所有模型。")
     add_figure(doc, "software_structure.png", "图 9 项目软件结构")
     add_figure(doc, "pipeline_diagram.png", "图 10 实验流水线")
@@ -275,7 +278,8 @@ def body(doc):
         ("报告", "scripts/build_report.py", "生成 Word 报告", "复现实验文档"),
     ], widths=[0.8, 1.55, 2.1, 2.0])
 
-    heading(doc, "7 实验设计", 1)
+    heading(doc, "4 实验设计与结果分析", 1)
+    heading(doc, "4.1 实验设置", 2)
     paragraph(doc, "实验在相同训练集上比较六类模型。预处理流程包括：删除 Id 标识符；对数值变量使用中位数填补；对类别变量使用众数填补；对类别变量进行独热编码；对目标变量 SalePrice 进行 log1p 变换。所有模型均在相同的 5 折交叉验证划分上评估。")
     table(doc, ["模型", "类别", "关键设置", "实验目的"], [
         ("Ridge", "线性模型", "alpha=12.0", "建立线性基线"),
@@ -287,7 +291,7 @@ def body(doc):
     ], widths=[1.25, 1.1, 2.35, 1.75])
     paragraph(doc, "由于课程报告强调算法比较和实验分析，本文没有进行大规模自动超参数搜索，而采用较稳定的经验参数。这样做的好处是实验流程清晰、计算成本可控；不足是线上成绩仍有进一步提升空间。")
 
-    heading(doc, "8 实验结果与分析", 1)
+    heading(doc, "4.2 交叉验证结果", 2)
     paragraph(doc, "表 5 给出了各模型在 5 折交叉验证中的平均 RMSLE 和标准差。结果表明，CatBoost、XGBoost 和 LightGBM 均显著优于 Ridge 与 Random Forest，说明 Boosting 机制对于本任务的非线性拟合和误差修正更加有效。")
     table(doc, ["模型", "平均 RMSLE", "标准差", "分析"], [
         ("CatBoost", "0.12029", "0.00532", "最优单模型，泛化稳定"),
@@ -303,27 +307,28 @@ def body(doc):
     paragraph(doc, "Random Forest 的表现低于 Boosting 模型，原因可能在于房价预测任务需要逐步修正残差中的细粒度模式，而 Random Forest 的树之间相互独立，主要通过降低方差提升稳定性，对偏差的降低不如梯度提升树明显。")
     paragraph(doc, "加权融合结果为 0.12187，未超过 CatBoost。理论上，融合只有在模型误差具有互补性时才能稳定提升；若强模型已经学习到相似模式，简单平均反而可能引入弱模型误差。本文使用的误差倒数权重较简单，未对融合权重进行优化，因此该结果是合理的。")
 
-    heading(doc, "9 Kaggle 线上评测", 1)
+    heading(doc, "4.3 Kaggle 线上评测", 2)
     paragraph(doc, "本文将本地交叉验证最优的 CatBoost 模型用于生成测试集预测文件 best_model_submission.csv，并提交至 Kaggle。线上 Public Score 为 0.12481。本地 5 折验证 RMSLE 为 0.12029，两者差距约 0.00452，说明本地验证与线上测试分布基本一致，没有出现严重过拟合。")
     table(doc, ["提交文件", "本地模型", "本地 RMSLE", "Kaggle Public Score"], [
         ("best_model_submission.csv", "CatBoost", "0.12029", "0.12481"),
     ], widths=[2.0, 1.3, 1.3, 1.8])
     paragraph(doc, "从竞赛实践角度看，Public Score 只能反映测试集公开部分的表现，并不能完全代表最终 Private Score。因此报告中更重视本地交叉验证的稳定性。若要进一步提升线上成绩，应避免反复根据 Public Score 调参，以免对公开榜单过拟合。")
 
-    heading(doc, "10 消融与误差讨论", 1)
+    heading(doc, "4.4 消融与误差讨论", 2)
     paragraph(doc, "虽然本文没有进行逐特征消融实验，但从模型族对比可获得若干结论。第一，log1p 目标变换是必要的，因为它使目标分布更平滑，也与 RMSLE 指标一致。第二，Boosting 模型显著优于 Ridge 和 Random Forest，说明逐轮残差修正比单纯线性拟合或 Bagging 平均更适合该任务。第三，CatBoost 和 XGBoost 的结果非常接近，说明当前性能瓶颈可能不在模型类别，而在特征工程和参数搜索。")
     paragraph(doc, "误差来源可能包括四类。其一，部分变量存在语义型缺失，统一填补策略没有充分利用“缺失本身就是信息”的性质。其二，异常样本可能影响模型对面积和价格关系的学习。其三，类别变量独热编码会产生较高维稀疏特征，可能削弱某些模型对类别统计信息的利用。其四，模型参数主要来自经验设置，尚未通过系统搜索达到最优。")
     paragraph(doc, "针对这些问题，后续可加入总面积特征、房龄特征、翻修间隔、质量面积交互、社区均价统计等人工特征；也可在交叉验证内进行贝叶斯优化或随机搜索；融合方面可以使用 Stacking，让二层模型基于 out-of-fold 预测学习最优组合，而不是手工设定权重。")
 
-    heading(doc, "11 与 SCI 论文规范的对照", 1)
+    heading(doc, "5 讨论与未来工作", 1)
+    heading(doc, "5.1 与 SCI 论文规范的对照", 2)
     paragraph(doc, "按照 SCI 论文常见结构，本文包含问题背景、相关工作、方法、实验设置、数据说明、结果分析、讨论、局限性和参考文献。与正式 SCI 论文相比，本文仍属于课程报告，创新点主要体现在对竞赛问题的工程化复现和扩展算法比较，而不是提出全新算法。")
     paragraph(doc, "为了增强论文式表达，报告中尽量避免只给出“跑分结果”，而是解释指标选择、算法机制、分布特征和误差来源。实验部分同时报告本地交叉验证和 Kaggle 线上成绩，能够体现模型选择与外部评测之间的一致性。")
 
-    heading(doc, "12 局限性与未来工作", 1)
+    heading(doc, "5.2 局限性与未来工作", 2)
     paragraph(doc, "本文存在以下局限。第一，特征工程仍然较基础，没有针对每个变量的业务语义进行细粒度处理。第二，超参数搜索范围有限，无法保证各模型均达到最优状态。第三，融合方法较简单，没有使用 Stacking、Blending 或基于验证集优化的权重学习。第四，报告没有使用 Private Score，因此线上泛化结论仍需谨慎。")
     paragraph(doc, "未来工作可从三个方向展开。首先，构建更丰富的特征体系，例如 TotalSF、HouseAge、RemodAge、QualArea、HasPool、HasGarage 等。其次，引入 Optuna 等自动调参工具，对树深、学习率、叶子数、正则化和采样率进行系统搜索。最后，使用分层交叉验证、异常值鲁棒处理和 Stacking 融合，以进一步提高成绩和稳定性。")
 
-    heading(doc, "13 总结", 1)
+    heading(doc, "6 总结", 1)
     paragraph(doc, "本文以 Kaggle House Prices 房价预测竞赛为对象，完成了扩展算法解决竞赛问题的完整实验。通过数据探索、模型训练、交叉验证、线上提交和误差分析，证明梯度提升树在中小规模结构化回归任务上具有明显优势。CatBoost 取得本地 RMSLE 0.12029 和 Kaggle Public Score 0.12481，是本文最优模型。")
     paragraph(doc, "从课程学习角度看，本实验不仅比较了不同算法的性能，也体现了机器学习项目的完整流程：问题定义、数据理解、算法选择、软件实现、实验验证、结果解释和复现提交。这些环节共同构成了机器学习理论与实践之间的桥梁。")
 
@@ -366,7 +371,7 @@ def body(doc):
         ("outputs/submissions/best_model_submission.csv", "CatBoost 提交文件", "否", "Kaggle 线上提交"),
         ("outputs/submissions/weighted_ensemble_submission.csv", "融合模型提交文件", "否", "对比融合效果"),
         ("reports/figures/*.png", "报告图表", "是", "支撑论文式分析"),
-        ("reports/高级机器学习理论课程报告_李小茹_扩展版.docx", "最终报告", "是", "课程提交材料"),
+        ("reports/高级机器学习理论课程报告_李小茹_终版.docx", "最终报告", "是", "课程提交材料"),
     ], widths=[2.2, 1.7, 1.0, 1.5])
 
 
