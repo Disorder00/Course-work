@@ -22,3 +22,4 @@ reports/rendered_report/
 *.log
 ~$*.docx
 reports/*去AI化*.docx
+reports/~WRL*.tmp
